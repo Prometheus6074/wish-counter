@@ -177,8 +177,8 @@
   var DEFAULT_STD_WEAPONS = ["Aquila Favonia","Skyward Blade","Wolf's Gravestone","Skyward Pride","Primordial Jade Winged-Spear","Skyward Spine","Amos' Bow","Skyward Harp","Lost Prayer to the Sacred Winds","Skyward Atlas"];
   var DEFAULT_PROXIES = [
     "", // empty string = try direct fetch, no proxy
-    "https://api.allorigins.win/raw?url=",
-    "https://corsproxy.io/?url="
+    "https://corsproxy.io/?url=",
+    "https://api.allorigins.win/raw?url="
   ];
 
   var STORAGE_DATA_KEY = "wishCounter.data.v1";
