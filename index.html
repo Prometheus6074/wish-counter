@@ -285,7 +285,19 @@
     <button class="btn-ghost btn-small" id="copyPsCommand" style="margin-top:8px;"><svg class="ph-icon" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200,32H163.74a47.92,47.92,0,0,0-71.48,0H56A16,16,0,0,0,40,48V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm-72,0a32,32,0,0,1,32,32H96A32,32,0,0,1,128,32Zm72,184H56V48H82.75A47.93,47.93,0,0,0,80,64v8a8,8,0,0,0,8,8h80a8,8,0,0,0,8-8V64a47.93,47.93,0,0,0-2.75-16H200Z"/></svg> Copy command</button>
     <label for="urlInput" style="margin-top:18px;">Wish history URL</label>
     <textarea id="urlInput" rows="5" placeholder="https://public-operation-hk4e-sg.hoyoverse.com/gacha_info/api/getGachaLog?..."></textarea>
-    <div class="log-box" id="importLog"></div>
+    <div class="import-progress" id="importProgress">
+      <div class="import-progress-top">
+        <span class="import-progress-status" id="importProgressStatus"></span>
+        <span class="import-progress-pct" id="importProgressPct">0%</span>
+      </div>
+      <div class="import-progress-track">
+        <div class="import-progress-indicator" id="importProgressIndicator" style="width:0%;"></div>
+      </div>
+      <div class="import-progress-bottom">
+        <span class="import-progress-error" id="importProgressError"></span>
+        <span class="import-progress-success" id="importProgressSuccess"></span>
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="btn-ghost" data-close="importOverlay">Cancel</button>
       <button class="btn-primary" id="startImport">Fetch Wishes</button>

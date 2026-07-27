@@ -193,6 +193,35 @@
   .pity-progress-target{ flex-shrink:0; white-space:nowrap; }
   .pity-progress-value .ph-icon{ width:0.95em; height:0.95em; color:var(--muted-2); flex-shrink:0; }
 
+  /* Import progress bar — same Track > Indicator shape as .pity-progress
+     above, but gold throughout (this is a one-off action's own progress,
+     not a stat tied to pityColor()'s green->red logic) and framed by four
+     small status lines instead of a single label/value row: current fetch
+     type top-left, percentage top-right, latest error bottom-left
+     (falling back to the fetch-type text when nothing has gone wrong),
+     and the latest success line bottom-right. */
+  .import-progress{ display:none; flex-direction:column; gap:7px; margin-top:14px; }
+  .import-progress.show{ display:flex; }
+  .import-progress-top, .import-progress-bottom{
+    display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+    font-family:'JetBrains Mono',monospace; font-size:0.72rem;
+  }
+  .import-progress-status{ color:var(--text); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .import-progress-pct{ color:var(--gold); font-weight:600; flex-shrink:0; }
+  .import-progress-track{
+    position:relative; height:7px; border-radius:999px; overflow:hidden;
+    background:rgba(255,255,255,0.07); border:1px solid var(--line-soft);
+  }
+  .import-progress-indicator{
+    height:100%; border-radius:999px; min-width:2px; width:0%;
+    background:linear-gradient(90deg, var(--gold-dim), var(--gold));
+    transition:width .4s var(--ease-out);
+  }
+  @media (prefers-reduced-motion: reduce){ .import-progress-indicator{ transition:none; } }
+  .import-progress-error{ color:var(--gold); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .import-progress-error.err{ color:var(--lose); }
+  .import-progress-success{ color:var(--win); flex-shrink:0; text-align:right; }
+
   .toggle-details{
     width:36px; height:28px; margin:14px auto 0; display:flex; align-items:center; justify-content:center;
     background:var(--panel-2); border:1px solid var(--line); color:var(--muted);

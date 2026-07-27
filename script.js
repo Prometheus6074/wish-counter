@@ -177,8 +177,8 @@
   var DEFAULT_STD_WEAPONS = ["Aquila Favonia","Skyward Blade","Wolf's Gravestone","Skyward Pride","Primordial Jade Winged-Spear","Skyward Spine","Amos' Bow","Skyward Harp","Lost Prayer to the Sacred Winds","Skyward Atlas"];
   var DEFAULT_PROXIES = [
     "", // empty string = try direct fetch, no proxy
-    "https://corsproxy.io/?url=",
-    "https://api.allorigins.win/raw?url="
+    "https://api.allorigins.win/raw?url=",
+    "https://corsproxy.io/?url="
   ];
 
   var STORAGE_DATA_KEY = "wishCounter.data.v1";
@@ -1250,18 +1250,67 @@
     return loop();
   }
 
+  function resetImportProgress(){
+    document.getElementById("importProgress").classList.remove("show");
+    document.getElementById("importProgressStatus").textContent = "";
+    document.getElementById("importProgressPct").textContent = "0%";
+    document.getElementById("importProgressIndicator").style.width = "0%";
+    var errEl = document.getElementById("importProgressError");
+    errEl.textContent = "";
+    errEl.classList.remove("err");
+    document.getElementById("importProgressSuccess").textContent = "";
+  }
+
   var BANNER_NAMES = { "200":"Standard", "301":"Character Event", "302":"Weapon Event", "400":"Character Event" };
 
   function runImport(rawUrl){
-    var logEl = document.getElementById("importLog");
-    logEl.className = "log-box show";
-    logEl.innerHTML = "";
+    resetImportProgress();
+    var progressWrap = document.getElementById("importProgress");
+    var statusEl = document.getElementById("importProgressStatus");
+    var pctEl = document.getElementById("importProgressPct");
+    var indicatorEl = document.getElementById("importProgressIndicator");
+    var errorEl = document.getElementById("importProgressError");
+    var successEl = document.getElementById("importProgressSuccess");
+    progressWrap.classList.add("show");
+
+    var totalSteps = GACHA_TYPES.length;
+    var stepPct = 100 / totalSteps;
+    var bannerIndex = -1; // counts how many banners have been started so far
+    var hasErrored = false;
+    var lastMsgSeen = null, lastMsgCount = 0;
+
+    function setPct(p){
+      p = Math.max(0, Math.min(100, p));
+      pctEl.textContent = Math.round(p) + "%";
+      indicatorEl.style.width = p + "%";
+    }
+
     function log(kind, msg){
-      var line = document.createElement("div");
-      line.className = kind;
-      line.textContent = msg;
-      logEl.appendChild(line);
-      logEl.scrollTop = logEl.scrollHeight;
+      if(kind === "progress"){
+        bannerIndex++;
+        statusEl.textContent = msg;
+        // The error slot mirrors the current fetch-type text for as long
+        // as nothing's gone wrong yet, so it's never just sitting empty.
+        if(!hasErrored) errorEl.textContent = msg;
+        setPct(bannerIndex*stepPct + stepPct*0.5);
+        return;
+      }
+      if(kind === "success"){
+        successEl.textContent = msg;
+        setPct((bannerIndex+1)*stepPct);
+        return;
+      }
+      // "warn" (transient — relay/direct request failed, rate limited) and
+      // "err" (fatal) both land in the bottom-left slot. The exact same
+      // message repeating (e.g. stuck retrying the same failed request)
+      // gets a "(2)", "(3)"... suffix appended instead of just re-printing
+      // identically, so a stalled import still reads as "still going"
+      // rather than looking frozen or like nothing happened.
+      hasErrored = true;
+      if(msg === lastMsgSeen){ lastMsgCount++; }
+      else { lastMsgSeen = msg; lastMsgCount = 1; }
+      errorEl.textContent = lastMsgCount > 1 ? (msg + " (" + lastMsgCount + ")") : msg;
+      errorEl.classList.toggle("err", kind === "err");
     }
 
     var startBtn = document.getElementById("startImport");
@@ -1281,7 +1330,7 @@
 
     GACHA_TYPES.forEach(function(gt){
       chain = chain.then(function(){
-        log("ok", "Fetching " + BANNER_NAMES[gt] + " (type " + gt + ")…");
+        log("progress", "Fetching " + BANNER_NAMES[gt] + " (type " + gt + ")…");
         // existing keys for whichever account this ends up being — we don't know uid yet on the very
         // first call, so if this is the first gacha type, existingKeys starts empty and we detect
         // uid from the first returned item. Keyed by content (time+name), not raw id, since ids
@@ -1317,7 +1366,7 @@
           acct.pulls[gt] = result.merged;
           newCount = result.addedCount;
           totalsNew[gt] = newCount;
-          log(newCount>0 ? "ok":"warn", BANNER_NAMES[gt] + ": " + newCount + " new wish" + (newCount===1?"":"es") + " found.");
+          log("success", BANNER_NAMES[gt] + ": " + newCount + " new wish" + (newCount===1?"":"es") + " found.");
         });
       });
     });
@@ -1334,7 +1383,8 @@
       });
       saveData();
       populateCharactersFromPulls(uidForThisImport);
-      log("ok","Done. Data saved locally for account " + uidForThisImport + ".");
+      log("success","Done. Data saved locally for account " + uidForThisImport + ".");
+      setPct(100);
       startBtn.disabled = false; startBtn.textContent = "Fetch Wishes";
       renderAll();
     }).catch(function(err){
@@ -3992,8 +4042,7 @@
   });
 
   function openImportOverlay(){
-    document.getElementById("importLog").className = "log-box";
-    document.getElementById("importLog").innerHTML = "";
+    resetImportProgress();
     openModal("importOverlay");
   }
   document.getElementById("openImport").addEventListener("click", openImportOverlay);
